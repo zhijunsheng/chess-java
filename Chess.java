@@ -107,6 +107,9 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
 
   private void drawPieces(Graphics g) {
     for (Piece p : engine.getPieces()) {
+      if (fromColRow != null && fromColRow.x == p.col && fromColRow.y == p.row) {
+        continue;
+      }
       g.drawImage(getPieceImage(p.imgName), originX + p.col * cellSide, originY + p.row * cellSide, cellSide, cellSide, this);
     }
   }
