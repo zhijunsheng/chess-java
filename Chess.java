@@ -80,7 +80,25 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
     }
   }
   
-  public void mouseReleased(MouseEvent me) {}
+  public void mouseReleased(MouseEvent me) {
+    if (fromColRow == null) return;
+
+    Point toColRow = xyToColRow(me.getPoint());
+    System.out.print("(" + fromColRow.x + ", " + fromColRow.y + ") -> (" + toColRow.x + ", " + toColRow.y + ") ");
+
+    if (engine.isValidMove(fromColRow, toColRow)) {
+      engine.move(fromColRow, toColRow);
+      System.out.println("valid move");
+    } else {
+      System.out.println("invalid move");
+    }
+
+    fromColRow = null;
+    movingImg = null;
+    movingImgXY = null;
+    repaint();
+    System.out.println(engine);
+  }
 
   // MouseMotionListener
   
@@ -144,6 +162,52 @@ class Engine {
 
   Engine(Set<Piece> pieces) {
     this.pieces = pieces;
+  }
+
+  boolean isValidMove(Point from, Point to) {
+    return isValid(from, to);
+  }
+
+  void move(Point from, Point to) {
+    Piece fromPiece = pieceAt(from.x, from.y);
+    Piece toPiece = pieceAt(to.x, to.y);
+    pieces.remove(fromPiece);
+    pieces.remove(toPiece);
+    pieces.add(new Piece(to.x, to.y, fromPiece.rank, fromPiece.isWhite, fromPiece.imgName)); 
+  }
+
+  private boolean isValid(Point from, Point to) {
+    if (from == null || to == null || from == to || !insideBoard(to) || sameColor(from, to)) {
+      return false;
+    }
+
+    Piece movingPiece = pieceAt(from.x, from.y);
+    if (movingPiece == null) {
+      return false;
+    }
+
+    boolean valid = false;
+    switch (movingPiece.rank) {
+      case KNIGHT: valid = isValidKnightMove(from, to); break;
+    }
+
+    return valid;
+  }
+
+  private boolean isValidKnightMove(Point from, Point to) {
+    return Math.abs(from.x - to.x) == 1 && Math.abs(from.y - to.y) == 2 || Math.abs(from.x - to.x) == 2 && Math.abs(from.y - to.y) == 1;
+  }
+
+  private boolean sameColor(Point from, Point to) {
+    if (from == null || to == null) return false;
+    Piece fromPiece = pieceAt(from.x, from.y);
+    Piece toPiece = pieceAt(to.x, to.y);
+    if (fromPiece == null || toPiece == null) return false;
+    return fromPiece.isWhite == toPiece.isWhite;
+  }
+
+  private boolean insideBoard(Point location) {
+    return location.x >= 0 && location.x <= 7 && location.y >= 0 && location.y <= 7;
   }
 
   Set<Piece> getPieces() {
