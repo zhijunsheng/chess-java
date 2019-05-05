@@ -11,6 +11,10 @@ import java.awt.Color;
 import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 
 class Chess {
@@ -23,6 +27,7 @@ class Chess {
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     f.add(chessPanel);
     f.setSize(400, 400);
+    f.setLocation(600, 600);
     f.setLayout(null);
     f.setVisible(true);
   }
@@ -32,7 +37,7 @@ class Chess {
   }
 }
 
-class ChessPanel extends JPanel {
+class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
   private int originX = 37;
   private int originY = 27;
   private int cellSide = 31;
@@ -40,14 +45,55 @@ class ChessPanel extends JPanel {
   private Engine engine;
   private Map<String, BufferedImage> keyNameValueImage = new HashMap<String, BufferedImage>();
 
+  private BufferedImage movingImg;
+  private Point movingImgXY;
+  private Point fromColRow;
+
   ChessPanel(Engine engine) {
     this.engine = engine;
+    addMouseListener(this);
+    addMouseMotionListener(this);
   }
 
   @Override
   public void paintComponent(Graphics g) {
     drawGrid(g);
     drawPieces(g);
+
+    if (movingImg != null) {
+      g.drawImage(movingImg, movingImgXY.x, movingImgXY.y, null);
+    }
+  }
+
+  // MouseListener
+
+  public void mouseClicked(MouseEvent me) {}
+  public void mouseEntered(MouseEvent me) {}
+  public void mouseExited(MouseEvent me) {}
+
+  public void mousePressed(MouseEvent me) {
+    Point p = xyToColRow(me.getPoint());
+    Piece piece = engine.pieceAt(p.x, p.y);
+    if (piece != null) {
+      fromColRow = p;
+      movingImg = getPieceImage(piece.imgName);
+    }
+  }
+  
+  public void mouseReleased(MouseEvent me) {}
+
+  // MouseMotionListener
+  
+  public void mouseMoved(MouseEvent me) {}
+  
+  public void mouseDragged(MouseEvent me) {
+    Point p = me.getPoint();
+    movingImgXY = new Point(p.x - cellSide / 2, p.y - cellSide / 2);
+    repaint();
+  }
+
+  private Point xyToColRow(Point xy) {
+    return new Point((int)((xy.x - originX + 0.5 * cellSide) / cellSide), (int)((xy.y - originY + 0.5 * cellSide) / cellSide));
   }
 
   private void drawGrid(Graphics g) {
@@ -72,7 +118,7 @@ class ChessPanel extends JPanel {
         img = resize(ImageIO.read(new File("./img/" + imgName + ".png")), cellSide, cellSide);
         keyNameValueImage.put(imgName, img);
       } catch (Exception e) {
-        System.out.println("failed to load image " + imgName);
+//        System.out.println("failed to load image " + imgName);
       }
     }
     return img;
@@ -122,7 +168,7 @@ class Engine {
     return pieces;
   }
 
-  private Piece pieceAt(int col, int row) {
+  Piece pieceAt(int col, int row) {
     for (Piece p: pieces) {
       if (p.col == col && p.row == row) {
         return p;
