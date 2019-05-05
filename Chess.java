@@ -93,7 +93,7 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
   }
 
   private Point xyToColRow(Point xy) {
-    return new Point((int)((xy.x - originX + 0.5 * cellSide) / cellSide), (int)((xy.y - originY + 0.5 * cellSide) / cellSide));
+    return new Point((int)((xy.x - originX) / cellSide), (int)((xy.y - originY) / cellSide));
   }
 
   private void drawGrid(Graphics g) {
