@@ -1,7 +1,9 @@
+import java.util.Set;
+import java.util.HashSet;
 
 class Chess {
   public static void main(String[] args) {
-    Engine engine = new Engine();
+    Engine engine = new Engine(Engine.initPieces());
     System.out.println(engine);
   }
 }
@@ -9,13 +11,43 @@ class Chess {
 class Engine {
   private boolean isWhiteTurn = true;
 
+  private Set<Piece> pieces;
+
+  Engine(Set<Piece> pieces) {
+    this.pieces = pieces;
+  }
+  
+  static Set<Piece> initPieces() {
+    Set<Piece> pieces = new HashSet<Piece>();
+    for (int i = 0; i < 8; i++) {
+      pieces.add(new Piece(i, 1, Rank.PAWN, false)); 
+    }
+    return pieces;
+  }
+
+  private Piece pieceAt(int col, int row) {
+    for (Piece p: pieces) {
+      if (p.col == col && p.row == row) {
+        return p;
+      }
+    }
+    return null;
+  }
+
   public String toString() {
     int rows = 8;
     int cols = 8;
     String brdStr = "";
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
-        brdStr += " .";
+        Piece p = pieceAt(c, r);
+        if (p== null) {
+          brdStr += " .";
+        } else {
+          switch (p.rank) {
+            case PAWN: brdStr += p.isWhite ? " P" : " p"; break;
+          }
+        }
       }
       brdStr += "\n";
     }
