@@ -1,27 +1,33 @@
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.imageio.ImageIO;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.BorderLayout;
+import java.awt.image.BufferedImage;
+import java.awt.Image;
+import java.io.File;
 
 class Chess {
   Chess() {
-    ChessPanel chessPanel = new ChessPanel();
+    Engine engine = new Engine(Engine.initPieces());
+    System.out.println(engine);
+    ChessPanel chessPanel = new ChessPanel(engine);
     chessPanel.setBounds(30, 30, 300, 300);
     JFrame f = new JFrame("Chess");
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    f.getContentPane().add(chessPanel, BorderLayout.CENTER);
+    f.add(chessPanel);
     f.setSize(400, 400);
     f.setLayout(null);
     f.setVisible(true);
   }
 
   public static void main(String[] args) {
-    Engine engine = new Engine(Engine.initPieces());
-    System.out.println(engine);
-
     new Chess();
   }
 }
@@ -31,9 +37,17 @@ class ChessPanel extends JPanel {
   private int originY = 27;
   private int cellSide = 31;
 
+  private Engine engine;
+  private Map<String, BufferedImage> keyNameValueImage = new HashMap<String, BufferedImage>();
+
+  ChessPanel(Engine engine) {
+    this.engine = engine;
+  }
+
   @Override
   public void paintComponent(Graphics g) {
     drawGrid(g);
+    drawPieces(g);
   }
 
   private void drawGrid(Graphics g) {
@@ -43,6 +57,34 @@ class ChessPanel extends JPanel {
         g.fillRect(originX + col * cellSide, originY + row * cellSide, cellSide, cellSide);
       }
     }
+  }
+
+  private void drawPieces(Graphics g) {
+    for (Piece p : engine.getPieces()) {
+      g.drawImage(getPieceImage(p.imgName), originX + p.col * cellSide, originY + p.row * cellSide, cellSide, cellSide, this);
+    }
+  }
+
+  private BufferedImage getPieceImage(String imgName) {
+    BufferedImage img = keyNameValueImage.get(imgName);
+    if (img == null) {
+      try {
+        img = resize(ImageIO.read(new File("./img/" + imgName + ".png")), cellSide, cellSide);
+        keyNameValueImage.put(imgName, img);
+      } catch (Exception e) {
+        System.out.println("failed to load image " + imgName);
+      }
+    }
+    return img;
+  }
+
+  private BufferedImage resize(BufferedImage img, int w, int h) {
+    Image tmpImg = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+    BufferedImage resized = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g2d = resized.createGraphics();
+    g2d.drawImage(tmpImg, 0, 0, null);
+    g2d.dispose();
+    return resized;
   }
 }
 
@@ -54,25 +96,29 @@ class Engine {
   Engine(Set<Piece> pieces) {
     this.pieces = pieces;
   }
+
+  Set<Piece> getPieces() {
+    return pieces;
+  }
   
   static Set<Piece> initPieces() {
     Set<Piece> pieces = new HashSet<Piece>();
     for (int i = 0; i < 8; i++) {
-      pieces.add(new Piece(i, 1, Rank.PAWN, false)); 
-      pieces.add(new Piece(i, 6, Rank.PAWN, true)); 
+      pieces.add(new Piece(i, 1, Rank.PAWN, false, "Pawn-black")); 
+      pieces.add(new Piece(i, 6, Rank.PAWN, true, "Pawn-white")); 
     }
     for (int i = 0; i < 2; i++) {
-      pieces.add(new Piece(i * 7, 0, Rank.ROOK, false)); 
-      pieces.add(new Piece(i * 7, 7, Rank.ROOK, true)); 
-      pieces.add(new Piece(1 + i * 5, 0, Rank.KNIGHT, false)); 
-      pieces.add(new Piece(1 + i * 5, 7, Rank.KNIGHT, true)); 
-      pieces.add(new Piece(2 + i * 3, 0, Rank.BISHOP, false)); 
-      pieces.add(new Piece(2 + i * 3, 7, Rank.BISHOP, true)); 
+      pieces.add(new Piece(i * 7, 0, Rank.ROOK, false, "Rook-black")); 
+      pieces.add(new Piece(i * 7, 7, Rank.ROOK, true, "Rook-white")); 
+      pieces.add(new Piece(1 + i * 5, 0, Rank.KNIGHT, false, "Knight-black")); 
+      pieces.add(new Piece(1 + i * 5, 7, Rank.KNIGHT, true, "Knight-white")); 
+      pieces.add(new Piece(2 + i * 3, 0, Rank.BISHOP, false, "Bishop-black")); 
+      pieces.add(new Piece(2 + i * 3, 7, Rank.BISHOP, true, "Bishop-white")); 
     }
-    pieces.add(new Piece(3, 0, Rank.QUEEN, false)); 
-    pieces.add(new Piece(3, 7, Rank.QUEEN, true)); 
-    pieces.add(new Piece(4, 0, Rank.KING, false)); 
-    pieces.add(new Piece(4, 7, Rank.KING, true)); 
+    pieces.add(new Piece(3, 0, Rank.QUEEN, false, "Queen-black")); 
+    pieces.add(new Piece(3, 7, Rank.QUEEN, true, "Queen-white")); 
+    pieces.add(new Piece(4, 0, Rank.KING, false, "King-black")); 
+    pieces.add(new Piece(4, 7, Rank.KING, true, "King-white")); 
     return pieces;
   }
 
@@ -125,12 +171,14 @@ class Piece {
   int row;
   Rank rank;
   boolean isWhite;
+  String imgName;
 
-  Piece(int col, int row, Rank rank, boolean isWhite) {
+  Piece(int col, int row, Rank rank, boolean isWhite, String imgName) {
     this.col = col;
     this.row = row;
     this.rank = rank;
     this.isWhite = isWhite;
+    this.imgName = imgName;
   }
 
   @Override
