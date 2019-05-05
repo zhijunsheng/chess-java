@@ -21,7 +21,20 @@ class Engine {
     Set<Piece> pieces = new HashSet<Piece>();
     for (int i = 0; i < 8; i++) {
       pieces.add(new Piece(i, 1, Rank.PAWN, false)); 
+      pieces.add(new Piece(i, 6, Rank.PAWN, true)); 
     }
+    for (int i = 0; i < 2; i++) {
+      pieces.add(new Piece(i * 7, 0, Rank.ROOK, false)); 
+      pieces.add(new Piece(i * 7, 7, Rank.ROOK, true)); 
+      pieces.add(new Piece(1 + i * 5, 0, Rank.KNIGHT, false)); 
+      pieces.add(new Piece(1 + i * 5, 7, Rank.KNIGHT, true)); 
+      pieces.add(new Piece(2 + i * 3, 0, Rank.BISHOP, false)); 
+      pieces.add(new Piece(2 + i * 3, 7, Rank.BISHOP, true)); 
+    }
+    pieces.add(new Piece(3, 0, Rank.QUEEN, false)); 
+    pieces.add(new Piece(3, 7, Rank.QUEEN, true)); 
+    pieces.add(new Piece(4, 0, Rank.KING, false)); 
+    pieces.add(new Piece(4, 7, Rank.KING, true)); 
     return pieces;
   }
 
@@ -46,6 +59,11 @@ class Engine {
         } else {
           switch (p.rank) {
             case PAWN: brdStr += p.isWhite ? " P" : " p"; break;
+            case ROOK: brdStr += p.isWhite ? " R" : " r"; break;
+            case KNIGHT: brdStr += p.isWhite ? " N" : " n"; break;
+            case BISHOP: brdStr += p.isWhite ? " B" : " b"; break;
+            case QUEEN: brdStr += p.isWhite ? " Q" : " q"; break;
+            case KING: brdStr += p.isWhite ? " K" : " k"; break;
           }
         }
       }
