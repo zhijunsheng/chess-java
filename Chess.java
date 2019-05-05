@@ -1,10 +1,48 @@
 import java.util.Set;
 import java.util.HashSet;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import java.awt.Graphics;
+import java.awt.Color;
+import java.awt.BorderLayout;
 
 class Chess {
+  Chess() {
+    ChessPanel chessPanel = new ChessPanel();
+    chessPanel.setBounds(30, 30, 300, 300);
+    JFrame f = new JFrame("Chess");
+    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    f.getContentPane().add(chessPanel, BorderLayout.CENTER);
+    f.setSize(400, 400);
+    f.setLayout(null);
+    f.setVisible(true);
+  }
+
   public static void main(String[] args) {
     Engine engine = new Engine(Engine.initPieces());
     System.out.println(engine);
+
+    new Chess();
+  }
+}
+
+class ChessPanel extends JPanel {
+  private int originX = 37;
+  private int originY = 27;
+  private int cellSide = 31;
+
+  @Override
+  public void paintComponent(Graphics g) {
+    drawGrid(g);
+  }
+
+  private void drawGrid(Graphics g) {
+    for (int row = 0; row < 8; row++) {
+      for (int col = 0; col < 8; col++) {
+        g.setColor((row + col) % 2 == 0 ? Color.WHITE : Color.GRAY);
+        g.fillRect(originX + col * cellSide, originY + row * cellSide, cellSide, cellSide);
+      }
+    }
   }
 }
 
