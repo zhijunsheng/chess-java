@@ -1,4 +1,3 @@
-import java.awt.Point;
 
 class Chess {
   public static void main(String[] args) {
@@ -27,11 +26,41 @@ class Engine {
 enum Rank {
   KING,
   QUEEN,
+  BISHOP,
+  KNIGHT,
+  ROOK,
+  PAWN,
 }
 
 class Piece {
-  Point location;
+  int col;
+  int row;
   Rank rank;
   boolean isWhite;
+
+  Piece(int col, int row, Rank rank, boolean isWhite) {
+    this.col = col;
+    this.row = row;
+    this.rank = rank;
+    this.isWhite = isWhite;
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other == this) return true;
+    if (!(other instanceof Piece)) return false;
+    Piece otherPiece = (Piece)other;
+    return otherPiece.col == col && otherPiece.row == row && otherPiece.rank == rank && otherPiece.isWhite == isWhite;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + col;
+    result = 31 * result + row;
+    result = 31 * result + rank.hashCode();
+    result = 31 * result + (isWhite ? 1 : 0);
+    return result;
+  }
 }
 
