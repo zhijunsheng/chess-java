@@ -4,6 +4,10 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JButton;
+import javax.swing.JButton;
+import javax.swing.ButtonGroup;
 import javax.imageio.ImageIO;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -15,6 +19,8 @@ import java.awt.Point;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.io.File;
 
 class Chess {
@@ -37,7 +43,7 @@ class Chess {
   }
 }
 
-class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
+class ChessPanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
   private int originX = 37;
   private int originY = 27;
   private int cellSide = 31;
@@ -49,10 +55,18 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
   private Point movingImgXY;
   private Point fromColRow;
 
+  private JPanel promotionPanel;
+  private JRadioButton jbQueen, jbRook, jbKnight, jbBishop;
+
   ChessPanel(Engine engine) {
     this.engine = engine;
     addMouseListener(this);
     addMouseMotionListener(this);
+
+    promotionPanel = createPromotionPanel();
+    add(promotionPanel);
+//    promotionPanel.setLayout(null);
+    promotionPanel.setVisible(false);
   }
 
   @Override
@@ -89,6 +103,11 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
     if (engine.isValidMove(fromColRow, toColRow)) {
       engine.move(fromColRow, toColRow);
       System.out.println("valid move");
+
+      engine.lastMovedPiece = engine.pieceAt(toColRow);
+      if (engine.lastMovedPiece.canBePromoted()) {
+        promotionPanel.setVisible(true);
+      }
     } else {
       System.out.println("invalid move");
     }
@@ -108,6 +127,19 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
     Point p = me.getPoint();
     movingImgXY = new Point(p.x - cellSide / 2, p.y - cellSide / 2);
     repaint();
+  }
+
+  // ActionListener
+  
+  public void actionPerformed(ActionEvent ae) {
+    Piece p = engine.lastMovedPiece;
+    if (jbQueen.isSelected()) p.promoteTo(Rank.QUEEN, p.isWhite ? "Queen-white" : "Queen-black");
+    if (jbRook.isSelected()) p.promoteTo(Rank.ROOK, p.isWhite ? "Rook-white" : "Rook-black");
+    if (jbKnight.isSelected()) p.promoteTo(Rank.KNIGHT, p.isWhite ? "Knight-white" : "Knight-black");
+    if (jbBishop.isSelected()) p.promoteTo(Rank.BISHOP, p.isWhite ? "Bishop-white" : "Bishop-black");
+    promotionPanel.setVisible(false);
+    repaint();
+    System.out.println(engine);
   }
 
   private Point xyToColRow(Point xy) {
@@ -153,11 +185,43 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
     g2d.dispose();
     return resized;
   }
+
+  private JPanel createPromotionPanel() {
+    JPanel promotionPanel = new JPanel();
+    promotionPanel.setSize(300, 300);
+
+    jbQueen = new JRadioButton("Q");
+    jbQueen.setBounds(10, 10, 100, 30);
+    jbRook = new JRadioButton("R");
+    jbRook.setBounds(10, 40, 100, 30);
+    jbKnight = new JRadioButton("N");
+    jbKnight.setBounds(10, 70, 100, 30);
+    jbBishop = new JRadioButton("B");
+    jbBishop.setBounds(10, 100, 100, 30);
+    ButtonGroup bg = new ButtonGroup();
+    bg.add(jbQueen);
+    bg.add(jbRook);
+    bg.add(jbKnight);
+    bg.add(jbBishop);
+    jbQueen.setSelected(true);
+
+    JButton btnOK = new JButton("OK");
+    btnOK.setBounds(10, 130, 100, 30);
+    promotionPanel.add(jbQueen);
+    promotionPanel.add(jbRook);
+    promotionPanel.add(jbKnight);
+    promotionPanel.add(jbBishop);
+    promotionPanel.add(btnOK);
+
+    btnOK.addActionListener(this); 
+
+    return promotionPanel;
+  }
 }
 
 class Engine {
+  Piece lastMovedPiece;
   private boolean isWhiteTurn = true;
-
   private Set<Piece> pieces;
 
   Engine(Set<Piece> pieces) {
@@ -382,12 +446,22 @@ class Piece {
     this.imgName = imgName;
   }
 
+  boolean canBePromoted() {
+    return rank == Rank.PAWN && (isWhite ? row == 0 : row == 7);
+  }
+
+  void promoteTo(Rank rank, String imgName) {
+    this.rank = rank;
+    this.imgName = imgName;
+  }
+
   @Override
   public boolean equals(Object other) {
     if (other == this) return true;
     if (!(other instanceof Piece)) return false;
     Piece otherPiece = (Piece)other;
-    return otherPiece.col == col && otherPiece.row == row && otherPiece.rank == rank && otherPiece.isWhite == isWhite;
+    //return otherPiece.col == col && otherPiece.row == row && otherPiece.rank == rank && otherPiece.isWhite == isWhite;
+    return otherPiece.col == col && otherPiece.row == row;
   }
 
   @Override
@@ -395,8 +469,8 @@ class Piece {
     int result = 17;
     result = 31 * result + col;
     result = 31 * result + row;
-    result = 31 * result + rank.hashCode();
-    result = 31 * result + (isWhite ? 1 : 0);
+//    result = 31 * result + rank.hashCode();
+ //   result = 31 * result + (isWhite ? 1 : 0);
     return result;
   }
 }
