@@ -191,9 +191,14 @@ class Engine {
       case KNIGHT: valid = isValidKnightMove(from, to); break;
       case BISHOP: valid = isValidBishopMove(from, to); break;
       case PAWN: valid = isValidPawnMove(from, to, movingPiece.isWhite); break;
+      case ROOK: valid = isValidRookMove(from, to); break;
     }
 
     return valid;
+  }
+
+  private boolean isValidRookMove(Point from, Point to) {
+    return isStraight(from, to) && numPiecesBetween(from, to) == 0;
   }
 
   private boolean isValidPawnMove(Point from, Point to, boolean isWhite) {
