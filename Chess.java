@@ -190,9 +190,19 @@ class Engine {
     switch (movingPiece.rank) {
       case KNIGHT: valid = isValidKnightMove(from, to); break;
       case BISHOP: valid = isValidBishopMove(from, to); break;
+      case PAWN: valid = isValidPawnMove(from, to, movingPiece.isWhite); break;
     }
 
     return valid;
+  }
+
+  private boolean isValidPawnMove(Point from, Point to, boolean isWhite) {
+    if (isPawnCapturing(from, to, isWhite)) return true;
+    int deltaY = Math.abs(to.y - from.y);
+    if (isWhite && from.y != 6 || !isWhite && from.y != 1) {
+      return goingStraightForward(from, to, isWhite) && deltaY == 1;
+    }
+    return goingStraightForward(from, to, isWhite) && (deltaY == 1 || deltaY == 2);
   }
 
   private boolean isValidBishopMove(Point from, Point to) {
@@ -202,6 +212,20 @@ class Engine {
   private boolean isValidKnightMove(Point from, Point to) {
     return Math.abs(from.x - to.x) == 1 && Math.abs(from.y - to.y) == 2 || Math.abs(from.x - to.x) == 2 && Math.abs(from.y - to.y) == 1;
   }
+
+  private boolean isPawnCapturing(Point from, Point to, boolean isWhite) {
+    Piece target = pieceAt(to.x, to.y);
+    return target != null && target.isWhite != isWhite && goingForward(from, to, isWhite) && isDiagonal(from, to) && Math.abs(from.x - to.x) == 1 && Math.abs(from.y - to.y) == 1;
+  }
+
+  private boolean goingForward(Point from, Point to, boolean isWhite) {
+    return isWhite ? to.y < from.y : to.y > from.y;
+  }
+
+  private boolean goingStraightForward(Point from, Point to, boolean isWhite) {
+    return goingForward(from, to, isWhite) && isVertical(from, to);
+  }
+
 
   private int numPiecesBetween(Point p1, Point p2) {
     if (!isStraight(p1, p2) && !isDiagonal(p1, p2)) return 0;
@@ -262,7 +286,7 @@ class Engine {
   static Set<Piece> initPieces() {
     Set<Piece> pieces = new HashSet<Piece>();
     for (int i = 0; i < 8; i++) {
-      //pieces.add(new Piece(i, 1, Rank.PAWN, false, "Pawn-black")); 
+      pieces.add(new Piece(i, 1, Rank.PAWN, false, "Pawn-black")); 
       pieces.add(new Piece(i, 6, Rank.PAWN, true, "Pawn-white")); 
     }
     for (int i = 0; i < 2; i++) {
