@@ -73,7 +73,7 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener {
 
   public void mousePressed(MouseEvent me) {
     Point p = xyToColRow(me.getPoint());
-    Piece piece = engine.pieceAt(p.x, p.y);
+    Piece piece = engine.pieceAt(p);
     if (piece != null) {
       fromColRow = p;
       movingImg = getPieceImage(piece.imgName);
@@ -169,8 +169,8 @@ class Engine {
   }
 
   void move(Point from, Point to) {
-    Piece fromPiece = pieceAt(from.x, from.y);
-    Piece toPiece = pieceAt(to.x, to.y);
+    Piece fromPiece = pieceAt(from);
+    Piece toPiece = pieceAt(to);
     pieces.remove(fromPiece);
     pieces.remove(toPiece);
     pieces.add(new Piece(to.x, to.y, fromPiece.rank, fromPiece.isWhite, fromPiece.imgName)); 
@@ -181,7 +181,7 @@ class Engine {
       return false;
     }
 
-    Piece movingPiece = pieceAt(from.x, from.y);
+    Piece movingPiece = pieceAt(from);
     if (movingPiece == null) {
       return false;
     }
@@ -229,7 +229,7 @@ class Engine {
   }
 
   private boolean isPawnCapturing(Point from, Point to, boolean isWhite) {
-    Piece target = pieceAt(to.x, to.y);
+    Piece target = pieceAt(to);
     return target != null && target.isWhite != isWhite && goingForward(from, to, isWhite) && isDiagonal(from, to) && Math.abs(from.x - to.x) == 1 && Math.abs(from.y - to.y) == 1;
   }
 
@@ -284,8 +284,8 @@ class Engine {
 
   private boolean sameColor(Point from, Point to) {
     if (from == null || to == null) return false;
-    Piece fromPiece = pieceAt(from.x, from.y);
-    Piece toPiece = pieceAt(to.x, to.y);
+    Piece fromPiece = pieceAt(from);
+    Piece toPiece = pieceAt(to);
     if (fromPiece == null || toPiece == null) return false;
     return fromPiece.isWhite == toPiece.isWhite;
   }
@@ -317,6 +317,10 @@ class Engine {
     pieces.add(new Piece(4, 0, Rank.KING, false, "King-black")); 
     pieces.add(new Piece(4, 7, Rank.KING, true, "King-white")); 
     return pieces;
+  }
+
+  Piece pieceAt(Point p) {
+    return pieceAt(p.x, p.y);
   }
 
   Piece pieceAt(int col, int row) {
