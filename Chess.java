@@ -189,13 +189,58 @@ class Engine {
     boolean valid = false;
     switch (movingPiece.rank) {
       case KNIGHT: valid = isValidKnightMove(from, to); break;
+      case BISHOP: valid = isValidBishopMove(from, to); break;
     }
 
     return valid;
   }
 
+  private boolean isValidBishopMove(Point from, Point to) {
+    return isDiagonal(from, to) && numPiecesBetween(from, to) == 0;
+  }
+
   private boolean isValidKnightMove(Point from, Point to) {
     return Math.abs(from.x - to.x) == 1 && Math.abs(from.y - to.y) == 2 || Math.abs(from.x - to.x) == 2 && Math.abs(from.y - to.y) == 1;
+  }
+
+  private int numPiecesBetween(Point p1, Point p2) {
+    if (!isStraight(p1, p2) && !isDiagonal(p1, p2)) return 0;
+    int numPieces = 0;
+    int numPointsBetween, deltaX, deltaY;
+    if (isVertical(p1, p2)) {
+      numPointsBetween = Math.abs(p2.y - p1.y) - 1;
+      deltaX = 0;
+      deltaY = p2.y > p1.y ? 1 : -1;
+    } else if (isHorizontal(p1, p2)) {
+      numPointsBetween = Math.abs(p2.x - p1.x) - 1;
+      deltaX = p2.x > p1.x ? 1 : -1;
+      deltaY = 0;
+    } else {
+      numPointsBetween = Math.abs(p2.x - p1.x) - 1;
+      deltaX = p2.x > p1.x ? 1 : -1;
+      deltaY = p2.y > p1.y ? 1 : -1;
+    }
+    System.out.println("numPointsBetween = " + numPointsBetween + ", deltaX = " + deltaX + ", deltaY = " + deltaY);
+    for (int i = 1; i <= numPointsBetween; i++) {
+      if (pieceAt(p1.x + i * deltaX, p1.y + i * deltaY) != null) numPieces++;
+    }
+    return numPieces;
+  }
+
+  private boolean isStraight(Point p1, Point p2) {
+    return isHorizontal(p1, p2) || isVertical(p1, p2);
+  }
+
+  private boolean isHorizontal(Point p1, Point p2) {
+    return p1.y == p2.y && p1 != p2;
+  }
+
+  private boolean isVertical(Point p1, Point p2) {
+    return p1.x == p2.x && p1 != p2;
+  }
+
+  private boolean isDiagonal(Point p1, Point p2) {
+    return Math.abs(p1.x - p2.x) == Math.abs(p1.y - p2.y) && p1 != p2;
   }
 
   private boolean sameColor(Point from, Point to) {
@@ -217,7 +262,7 @@ class Engine {
   static Set<Piece> initPieces() {
     Set<Piece> pieces = new HashSet<Piece>();
     for (int i = 0; i < 8; i++) {
-      pieces.add(new Piece(i, 1, Rank.PAWN, false, "Pawn-black")); 
+      //pieces.add(new Piece(i, 1, Rank.PAWN, false, "Pawn-black")); 
       pieces.add(new Piece(i, 6, Rank.PAWN, true, "Pawn-white")); 
     }
     for (int i = 0; i < 2; i++) {
