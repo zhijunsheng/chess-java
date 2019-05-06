@@ -193,11 +193,16 @@ class Engine {
       case PAWN: valid = isValidPawnMove(from, to, movingPiece.isWhite); break;
       case ROOK: valid = isValidRookMove(from, to); break;
       case QUEEN: valid = isValidQueenMove(from, to); break;
+      case KING: valid = isValidKingMove(from, to); break;
     }
 
     return valid;
   }
   
+  private boolean isValidKingMove(Point from, Point to) {
+    return (isStraight(from, to) || isDiagonal(from, to)) && (Math.abs(from.x - to.x) == 1 || Math.abs(from.y - to.y) == 1);
+  }
+
   private boolean isValidQueenMove(Point from, Point to) {
     return (isStraight(from, to) || isDiagonal(from, to)) && numPiecesBetween(from, to) == 0;
   }
