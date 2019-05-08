@@ -345,6 +345,7 @@ class Engine {
   }
 
   private boolean isValidPawnMove(Point from, Point to, boolean isWhite) {
+    if (pieceAt(from.x, from.y + (isWhite ? -1 : 1)) != null) return false;
     if (isPawnCapturing(from, to, isWhite)) return true;
     int deltaY = Math.abs(to.y - from.y);
     if (isWhite && from.y != 6 || !isWhite && from.y != 1) {
