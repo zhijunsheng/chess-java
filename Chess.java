@@ -2,6 +2,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -22,12 +23,40 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 
 class Chess {
-  Chess() {
+
+  private Map<String, Image> createPieceImages() throws IOException {
+    Map<String, Image> keyNameValueImage = new HashMap<>();
+    Set<String> names = new HashSet<>(Arrays.asList(
+          "Rook-black", 
+          "Knight-black", 
+          "Bishop-black", 
+          "Queen-black", 
+          "King-black", 
+          "Pawn-black", 
+          "Rook-white", 
+          "Knight-white", 
+//          "Bishop-white", 
+          "Queen-white", 
+          "King-white", 
+          "Pawn-white" 
+          ));
+    for (String imgName : names) {
+      String path = "./img/" + imgName + ".png";
+      File file = new File(path);
+      keyNameValueImage.put(imgName, ImageIO.read(file).getScaledInstance(ChessPanel.cellSide, ChessPanel.cellSide, Image.SCALE_SMOOTH));
+    }
+    return keyNameValueImage;
+  }
+
+  Chess() throws IOException {
+    Map<String, Image> keyNameValueImage = createPieceImages();
+
     Engine engine = new Engine(Engine.initPieces());
     System.out.println(engine);
-    ChessPanel chessPanel = new ChessPanel(engine);
+    ChessPanel chessPanel = new ChessPanel(engine, keyNameValueImage);
     chessPanel.setBounds(30, 30, 300, 300);
     JFrame f = new JFrame("Chess");
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -38,34 +67,35 @@ class Chess {
     f.setVisible(true);
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     new Chess();
   }
 }
 
 class ChessPanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
+  final static int cellSide = 31;
+  
   private int originX = 37;
   private int originY = 27;
-  private int cellSide = 31;
 
   private Engine engine;
-  private Map<String, BufferedImage> keyNameValueImage = new HashMap<String, BufferedImage>();
+  private Map<String, Image> keyNameValueImage;
 
-  private BufferedImage movingImg;
+  private Image movingImg;
   private Point movingImgXY;
   private Point fromColRow;
 
   private JPanel promotionPanel;
   private JRadioButton jbQueen, jbRook, jbKnight, jbBishop;
 
-  ChessPanel(Engine engine) {
+  ChessPanel(Engine engine, Map<String, Image> keyNameValueImage) {
     this.engine = engine;
+    this.keyNameValueImage = keyNameValueImage;
     addMouseListener(this);
     addMouseMotionListener(this);
 
     promotionPanel = createPromotionPanel();
     add(promotionPanel);
-//    promotionPanel.setLayout(null);
     promotionPanel.setVisible(false);
   }
 
@@ -104,8 +134,7 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener, A
       engine.move(fromColRow, toColRow);
       System.out.println("valid move");
 
-      engine.lastMovedPiece = engine.pieceAt(toColRow);
-      if (engine.lastMovedPiece.canBePromoted()) {
+      if (engine.lastMovedPiece().canBePromoted()) {
         promotionPanel.setVisible(true);
       }
     } else {
@@ -132,7 +161,7 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener, A
   // ActionListener
   
   public void actionPerformed(ActionEvent ae) {
-    Piece p = engine.lastMovedPiece;
+    Piece p = engine.lastMovedPiece();
     if (jbQueen.isSelected()) p.promoteTo(Rank.QUEEN, p.isWhite ? "Queen-white" : "Queen-black");
     if (jbRook.isSelected()) p.promoteTo(Rank.ROOK, p.isWhite ? "Rook-white" : "Rook-black");
     if (jbKnight.isSelected()) p.promoteTo(Rank.KNIGHT, p.isWhite ? "Knight-white" : "Knight-black");
@@ -164,26 +193,8 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener, A
     }
   }
 
-  private BufferedImage getPieceImage(String imgName) {
-    BufferedImage img = keyNameValueImage.get(imgName);
-    if (img == null) {
-      try {
-        img = resize(ImageIO.read(new File("./img/" + imgName + ".png")), cellSide, cellSide);
-        keyNameValueImage.put(imgName, img);
-      } catch (Exception e) {
-//        System.out.println("failed to load image " + imgName);
-      }
-    }
-    return img;
-  }
-
-  private BufferedImage resize(BufferedImage img, int w, int h) {
-    Image tmpImg = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-    BufferedImage resized = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-    Graphics2D g2d = resized.createGraphics();
-    g2d.drawImage(tmpImg, 0, 0, null);
-    g2d.dispose();
-    return resized;
+  private Image getPieceImage(String imgName) {
+    return keyNameValueImage.get(imgName);
   }
 
   private JPanel createPromotionPanel() {
@@ -220,9 +231,16 @@ class ChessPanel extends JPanel implements MouseListener, MouseMotionListener, A
 }
 
 class Engine {
-  Piece lastMovedPiece;
+  private Piece lastMovedPiece;
   private boolean isWhiteTurn = true;
   private Set<Piece> pieces;
+  
+  private boolean whiteKingMoved = false;
+  private boolean whiteKingSideRookMoved = false;
+  private boolean whiteQueenSideRookMoved = false;
+  private boolean blackKingMoved = false;
+  private boolean blackKingSideRookMoved = false;
+  private boolean blackQueenSideRookMoved = false;
 
   Engine(Set<Piece> pieces) {
     this.pieces = pieces;
@@ -237,7 +255,58 @@ class Engine {
     Piece toPiece = pieceAt(to);
     pieces.remove(fromPiece);
     pieces.remove(toPiece);
-    pieces.add(new Piece(to.x, to.y, fromPiece.rank, fromPiece.isWhite, fromPiece.imgName)); 
+    lastMovedPiece = new Piece(to.x, to.y, fromPiece.rank, fromPiece.isWhite, fromPiece.imgName); 
+    pieces.add(lastMovedPiece);
+
+    updateCastling();
+  }
+
+  Piece lastMovedPiece() {
+    return lastMovedPiece;
+  }
+
+  boolean canCastle(Point from, Point to) {
+    if (pieceAt(to) != null) return false;
+    if (numPiecesBetween(from, to) != 0) return false;
+    Piece king = pieceAt(from);
+    if (king == null) return false;
+    if (king.isWhite && whiteKingMoved) return false;
+    if (!king.isWhite && blackKingMoved) return false;
+    if (to.y != (king.isWhite ? 7 : 0)) return false;
+
+    boolean kingSide = to.x - from.x == 2;
+    boolean queenSide = from.x - to.x == 2;
+
+    if (kingSide && king.isWhite && whiteKingSideRookMoved) return false;
+    if (kingSide && !king.isWhite && blackKingSideRookMoved) return false;
+    if (queenSide && king.isWhite && whiteQueenSideRookMoved) return false;
+    if (queenSide && !king.isWhite && blackQueenSideRookMoved) return false;
+
+    // put locations into threat checking Set
+
+    return true;
+  }
+
+  private boolean threatened(Point location) {
+    return false;
+  }
+
+  private void updateCastling() {
+    if (lastMovedPiece.rank == Rank.KING) {
+      if (lastMovedPiece.isWhite) {
+        whiteKingMoved = true;
+      } else {
+        blackKingMoved = true;
+      }
+    } else if (lastMovedPiece.rank == Rank.ROOK) {
+      if (lastMovedPiece.isWhite) {
+        if (lastMovedPiece.col == 7) whiteKingSideRookMoved = true;
+        if (lastMovedPiece.col == 0) whiteQueenSideRookMoved = true;
+      } else {
+        if (lastMovedPiece.col == 7) blackKingSideRookMoved = true;
+        if (lastMovedPiece.col == 0) blackQueenSideRookMoved = true;
+      }
+    }
   }
 
   private boolean isValid(Point from, Point to) {
@@ -304,7 +373,6 @@ class Engine {
   private boolean goingStraightForward(Point from, Point to, boolean isWhite) {
     return goingForward(from, to, isWhite) && isVertical(from, to);
   }
-
 
   private int numPiecesBetween(Point p1, Point p2) {
     if (!isStraight(p1, p2) && !isDiagonal(p1, p2)) return 0;
