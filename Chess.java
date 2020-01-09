@@ -57,12 +57,12 @@ class Chess {
     Engine engine = new Engine(Engine.initPieces());
     System.out.println(engine);
     ChessPanel chessPanel = new ChessPanel(engine, keyNameValueImage);
-    chessPanel.setBounds(30, 30, 300, 300);
+    chessPanel.setBounds(30, 30, 830, 830);
     JFrame f = new JFrame("Chess");
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     f.add(chessPanel);
-    f.setSize(400, 400);
-    f.setLocation(600, 600);
+    f.setSize(930, 930);
+    f.setLocation(200, 200);
     f.setLayout(null);
     f.setVisible(true);
   }
@@ -73,7 +73,7 @@ class Chess {
 }
 
 class ChessPanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
-  final static int cellSide = 31;
+  final static int cellSide = 100;
   
   private int originX = 37;
   private int originY = 27;
