@@ -38,7 +38,7 @@ class Chess {
           "Pawn-black", 
           "Rook-white", 
           "Knight-white", 
-//          "Bishop-white", 
+          "Bishop-white", 
           "Queen-white", 
           "King-white", 
           "Pawn-white" 
