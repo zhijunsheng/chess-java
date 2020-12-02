@@ -14,7 +14,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class ChessPanel extends JPanel {
+public class ChessView extends JPanel {
 
 	private static final long serialVersionUID = -3320545318004171146L;
 	
@@ -24,7 +24,7 @@ public class ChessPanel extends JPanel {
 	
 	Map<String, Image> keyNameValueImage = new HashMap<String, Image>();
 	
-	public ChessPanel() {
+	public ChessView() {
 		String[] imageNames = {
 			"Bishop-black",
 			"Bishop-white",
