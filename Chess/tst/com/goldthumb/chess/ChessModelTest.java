@@ -9,6 +9,7 @@ class ChessModelTest {
 	@Test
 	void testToString() {
 		ChessModel chessModel = new ChessModel();
+		chessModel.reset();
 		System.out.println(chessModel);
 	}
 
