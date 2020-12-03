@@ -7,6 +7,8 @@ public class ChessModel {
 	private Set<ChessPiece> piecesBox = new HashSet<ChessPiece>();
 	
 	void reset() {
+		piecesBox.removeAll(piecesBox);
+		
 		for (int i = 0; i < 2; i++) {
 			piecesBox.add(new ChessPiece(0 + i * 7, 7, Player.BLACK, Rank.ROOK, ChessConstants.bRook));
 			piecesBox.add(new ChessPiece(0 + i * 7, 0, Player.WHITE, Rank.ROOK, ChessConstants.wRook));
@@ -27,7 +29,16 @@ public class ChessModel {
 		piecesBox.add(new ChessPiece(3, 0, Player.WHITE, Rank.QUEEN, ChessConstants.wQueen));
 		piecesBox.add(new ChessPiece(4, 7, Player.BLACK, Rank.KING, ChessConstants.bKing));
 		piecesBox.add(new ChessPiece(4, 0, Player.WHITE, Rank.KING, ChessConstants.wKing));
+	}
+	
+	void movePiece(int fromCol, int fromRow, int toCol, int toRow) {
+		ChessPiece candidate = pieceAt(fromCol, fromRow);
+		if (candidate == null) {
+			return;
+		}
 		
+		candidate.col = toCol;
+		candidate.row = toRow;
 	}
 	
 	ChessPiece pieceAt(int col, int row) {
