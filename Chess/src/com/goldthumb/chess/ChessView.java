@@ -18,6 +18,8 @@ public class ChessView extends JPanel {
 
 	private static final long serialVersionUID = -3320545318004171146L;
 	
+	ChessDelegate chessDelegate;
+	
 	int originX = 55;
 	int originY = 45;
 	int cellSide = 60;
@@ -59,9 +61,18 @@ public class ChessView extends JPanel {
 		Graphics2D g2 = (Graphics2D)g;
 		
 		drawBoard(g2);
-		
-		drawImage(g2, 0, 0, "Rook-black");
-		drawImage(g2, 0, 1, "Pawn-black");
+		drawPieces(g2);
+	}
+	
+	private void drawPieces(Graphics2D g2) {
+		for (int row = 7; row >= 0; row--) {
+			for (int col = 0; col < 8; col++) {
+				ChessPiece p = chessDelegate.pieceAt(col, row);
+				if (p != null) {
+					drawImage(g2, col, row, p.imgName);
+				}
+			}
+		}
 	}
 
 	
