@@ -26,6 +26,8 @@ public class ChessView extends JPanel implements MouseListener {
 	private int cellSide = -1;
 	
 	private Map<String, Image> keyNameValueImage = new HashMap<String, Image>();
+	private int fromCol = -1;
+	private int fromRow = -1;
 	
 	ChessView(ChessDelegate chessDelegate) {
 		this.chessDelegate = chessDelegate;
@@ -121,16 +123,15 @@ public class ChessView extends JPanel implements MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		int x = e.getPoint().x;
-		int col = (x - originX) / cellSide;
-		System.out.print("from " + col);		
+		fromCol = (e.getPoint().x - originX) / cellSide;
+		fromRow = (e.getPoint().y - originY) / cellSide;
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		int x = e.getPoint().x;
-		int col = (x - originX) / cellSide;
-		System.out.println(" to " + col);
+		int col = (e.getPoint().x - originX) / cellSide;
+		int row = (e.getPoint().y - originY) / cellSide;
+		chessDelegate.movePiece(fromCol, fromRow, col, row);
 	}
 
 	@Override
