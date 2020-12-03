@@ -4,8 +4,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class ChessView extends JPanel implements MouseListener {
+public class ChessView extends JPanel implements MouseListener, MouseMotionListener {
 
 	private static final long serialVersionUID = -3320545318004171146L;
 	
@@ -28,6 +30,8 @@ public class ChessView extends JPanel implements MouseListener {
 	private Map<String, Image> keyNameValueImage = new HashMap<String, Image>();
 	private int fromCol = -1;
 	private int fromRow = -1;
+	private ChessPiece movingPiece;
+	private Point movingPiecePoint;
 	
 	ChessView(ChessDelegate chessDelegate) {
 		this.chessDelegate = chessDelegate;
@@ -57,6 +61,7 @@ public class ChessView extends JPanel implements MouseListener {
 		}
 		
 		addMouseListener(this);
+		addMouseMotionListener(this);
 	}
 	
 	@Override
@@ -82,6 +87,11 @@ public class ChessView extends JPanel implements MouseListener {
 					drawImage(g2, col, row, p.imgName);
 				}
 			}
+		}
+		
+		if (movingPiece != null && movingPiecePoint != null) {
+			Image img = keyNameValueImage.get(movingPiece.imgName);
+			g2.drawImage(img, movingPiecePoint.x - cellSide/2, movingPiecePoint.y - cellSide/2, cellSide, cellSide, null);
 		}
 	}
 	
@@ -125,6 +135,7 @@ public class ChessView extends JPanel implements MouseListener {
 	public void mousePressed(MouseEvent e) {
 		fromCol = (e.getPoint().x - originX) / cellSide;
 		fromRow = (e.getPoint().y - originY) / cellSide;
+		movingPiece = chessDelegate.pieceAt(fromCol, fromRow);
 	}
 
 	@Override
@@ -132,6 +143,8 @@ public class ChessView extends JPanel implements MouseListener {
 		int col = (e.getPoint().x - originX) / cellSide;
 		int row = (e.getPoint().y - originY) / cellSide;
 		chessDelegate.movePiece(fromCol, fromRow, col, row);
+		movingPiece = null;
+		movingPiecePoint = null;
 	}
 
 	@Override
@@ -139,4 +152,13 @@ public class ChessView extends JPanel implements MouseListener {
 
 	@Override
 	public void mouseExited(MouseEvent e) {}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		movingPiecePoint = e.getPoint();
+		repaint();
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {}
 }
