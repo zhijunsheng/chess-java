@@ -16,29 +16,31 @@ public class ChessView extends JPanel {
 
 	private static final long serialVersionUID = -3320545318004171146L;
 	
-	ChessDelegate chessDelegate;
+	private ChessDelegate chessDelegate;
 	
-	double scaleFactor = 0.9;
-	int originX = -1;
-	int originY = -1;
-	int cellSide = -1;
+	private double scaleFactor = 0.9;
+	private int originX = -1;
+	private int originY = -1;
+	private int cellSide = -1;
 	
-	Map<String, Image> keyNameValueImage = new HashMap<String, Image>();
+	private Map<String, Image> keyNameValueImage = new HashMap<String, Image>();
 	
-	public ChessView() {
+	ChessView(ChessDelegate chessDelegate) {
+		this.chessDelegate = chessDelegate;
+		
 		String[] imageNames = {
-			"Bishop-black",
-			"Bishop-white",
-			"King-black",
-			"King-white",
-			"Knight-black",
-			"Knight-white",
-			"Pawn-black",
-			"Pawn-white",
-			"Queen-black",
-			"Queen-white",
-			"Rook-black",
-			"Rook-white",
+			ChessConstants.bBishop,
+			ChessConstants.wBishop,
+			ChessConstants.bKing,
+			ChessConstants.wKing,
+			ChessConstants.bKnight,
+			ChessConstants.wKnight,
+			ChessConstants.bPawn,
+			ChessConstants.wPawn,
+			ChessConstants.bQueen,
+			ChessConstants.wQueen,
+			ChessConstants.bRook,
+			ChessConstants.wRook,
 		};
 		
 		try {

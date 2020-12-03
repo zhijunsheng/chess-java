@@ -13,8 +13,7 @@ public class ChessController implements ChessDelegate {
 		frame.setSize(600, 600);
 		frame.setLocation(0, 1300);
 		
-		panel = new ChessView();
-		panel.chessDelegate = this;
+		panel = new ChessView(this);
 		
 		frame.add(panel);
 		frame.setVisible(true);
