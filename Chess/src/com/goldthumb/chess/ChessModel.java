@@ -37,6 +37,15 @@ public class ChessModel {
 			return;
 		}
 		
+		ChessPiece target = pieceAt(toCol, toRow);
+		if (target != null) {
+			if (target.player == candidate.player) {
+				return;
+			} else {
+				piecesBox.remove(target);
+			}
+		}
+		
 		candidate.col = toCol;
 		candidate.row = toRow;
 	}
