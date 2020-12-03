@@ -5,8 +5,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,9 +18,10 @@ public class ChessView extends JPanel {
 	
 	ChessDelegate chessDelegate;
 	
-	int originX = 55;
-	int originY = 45;
-	int cellSide = 60;
+	double scaleFactor = 0.9;
+	int originX = -1;
+	int originY = -1;
+	int cellSide = -1;
 	
 	Map<String, Image> keyNameValueImage = new HashMap<String, Image>();
 	
@@ -50,13 +49,16 @@ public class ChessView extends JPanel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-
 	}
 	
 	@Override
 	protected void paintChildren(Graphics g) {
 		super.paintChildren(g);
+		
+		int smaller = Math.min(getSize().width, getSize().height);
+		cellSide = (int) (((double)smaller) * scaleFactor / 8);
+		originX = (getSize().width - 8 * cellSide) / 2;
+		originY = (getSize().height - 8 * cellSide) / 2;
 		
 		Graphics2D g2 = (Graphics2D)g;
 		
@@ -74,7 +76,6 @@ public class ChessView extends JPanel {
 			}
 		}
 	}
-
 	
 	private void drawImage(Graphics2D g2, int col, int row, String imgName) {
 		Image img = keyNameValueImage.get(imgName);
