@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
@@ -12,7 +14,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class ChessView extends JPanel {
+public class ChessView extends JPanel implements MouseListener {
 
 	private static final long serialVersionUID = -3320545318004171146L;
 	
@@ -51,6 +53,8 @@ public class ChessView extends JPanel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		addMouseListener(this);
 	}
 	
 	@Override
@@ -111,4 +115,27 @@ public class ChessView extends JPanel {
 		g2.setColor(light ? Color.white : Color.gray);		
 		g2.fillRect(originX + col * cellSide, originY + row * cellSide, cellSide, cellSide);
 	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		int x = e.getPoint().x;
+		int col = (x - originX) / cellSide;
+		System.out.print("from " + col);		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		int x = e.getPoint().x;
+		int col = (x - originX) / cellSide;
+		System.out.println(" to " + col);
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {}
+
+	@Override
+	public void mouseExited(MouseEvent e) {}
 }
