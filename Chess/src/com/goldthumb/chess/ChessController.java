@@ -7,12 +7,13 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.util.concurrent.Executors;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class ChessController implements ChessDelegate, ActionListener {
+public class ChessController implements ChessDelegate, ActionListener, Runnable {
 	private ChessModel chessModel = new ChessModel();
 	private ChessView chessBoardPanel;
 	private JButton resetBtn;
@@ -71,21 +72,28 @@ public class ChessController implements ChessDelegate, ActionListener {
 			chessModel.reset();
 			chessBoardPanel.repaint();
 		} else if (e.getSource() == serverBtn) {
-			try (var listener = new ServerSocket(50000)) {
-				System.out.println("server is listening to port 50000");
-				while (true) {
-					try (var socket = listener.accept()) {
-						var out = new PrintWriter(socket.getOutputStream(), true);
-						out.println("from (0, 1) to (0, 2)");
-					}
-				}
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+			var pool = Executors.newFixedThreadPool(1);
+			pool.execute(this);
 		} else if (e.getSource() == clientBtn) {
 			System.out.println("Connect (for socket client) clicked");
 		}
 		
+	}
+
+	@Override
+	public void run() {
+		try (var listener = new ServerSocket(50000)) {
+			System.out.println("server is listening to port 50000");
+			while (true) {
+				try (var socket = listener.accept()) {
+					var out = new PrintWriter(socket.getOutputStream(), true);
+					out.println("from (0, 1) to (0, 2)");
+					System.out.println("sending a move to client");
+				}
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 }
