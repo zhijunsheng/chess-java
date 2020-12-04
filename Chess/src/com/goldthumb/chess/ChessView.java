@@ -142,7 +142,11 @@ public class ChessView extends JPanel implements MouseListener, MouseMotionListe
 	public void mouseReleased(MouseEvent e) {
 		int col = (e.getPoint().x - originX) / cellSide;
 		int row = 7 - (e.getPoint().y - originY) / cellSide;
-		chessDelegate.movePiece(fromCol, fromRow, col, row);
+		
+		if (fromCol != col || fromRow != row) {
+			chessDelegate.movePiece(fromCol, fromRow, col, row);
+		}
+		
 		movingPiece = null;
 		movingPiecePoint = null;
 	}
