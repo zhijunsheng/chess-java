@@ -4,11 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 
@@ -23,6 +24,8 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 	private JButton resetBtn;
 	private JButton serverBtn;
 	private JButton clientBtn;
+	private PrintWriter printWriter;
+	private Scanner scanner;
 	
 	ChessController() {
 		chessModel.reset();
@@ -53,6 +56,14 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 		
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				super.windowClosing(e);
+				printWriter.close();
+				scanner.close();
+			}
+		});
 	}
 
 	public static void main(String[] args) {
@@ -68,6 +79,9 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 	public void movePiece(int fromCol, int fromRow, int toCol, int toRow) {
 		chessModel.movePiece(fromCol, fromRow, toCol, toRow);
 		chessBoardPanel.repaint();
+		if (printWriter != null) {
+			printWriter.println(fromCol + "," + fromRow + "," + toCol + "," + toRow);
+		}
 	}
 
 	@Override
@@ -81,22 +95,24 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 		} else if (e.getSource() == clientBtn) {
 			System.out.println("Connect (for socket client) clicked");
 			try (var socket = new Socket("localhost", 50000)) {
-				var in = new Scanner(socket.getInputStream());
-				var moveStr = in.nextLine(); // "0,1,0,2"
-				System.out.println("from server: " + moveStr);
-				var moveStrArr = moveStr.split(","); // ["0", "1", "0", "2"]
-				var fromCol = Integer.parseInt(moveStrArr[0]);
-				var fromRow = Integer.parseInt(moveStrArr[1]);
-				var toCol = Integer.parseInt(moveStrArr[2]);
-				var toRow = Integer.parseInt(moveStrArr[3]);
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						chessModel.movePiece(fromCol, fromRow, toCol, toRow);
-						chessBoardPanel.repaint();
-					}
-				});
-				
+				scanner = new Scanner(socket.getInputStream());
+				printWriter = new PrintWriter(socket.getOutputStream(), true);
+				while (scanner.hasNextLine()) {
+					var moveStr = scanner.nextLine();
+					System.out.println("from server: " + moveStr);
+					var moveStrArr = moveStr.split(",");
+					var fromCol = Integer.parseInt(moveStrArr[0]);
+					var fromRow = Integer.parseInt(moveStrArr[1]);
+					var toCol = Integer.parseInt(moveStrArr[2]);
+					var toRow = Integer.parseInt(moveStrArr[3]);
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							chessModel.movePiece(fromCol, fromRow, toCol, toRow);
+							chessBoardPanel.repaint();
+						}
+					});
+				}
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -107,12 +123,27 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 	public void run() {
 		try (var listener = new ServerSocket(50000)) {
 			System.out.println("server is listening to port 50000");
-			while (true) {
-				try (var socket = listener.accept()) {
-					var out = new PrintWriter(socket.getOutputStream(), true);
-					out.println("0,1,0,3");
-					System.out.println("server: sending a move to client");
+			try (var socket = listener.accept()) {
+				printWriter = new PrintWriter(socket.getOutputStream(), true);
+				scanner = new Scanner(socket.getInputStream());
+				while (scanner.hasNextLine()) {
+					var moveStr = scanner.nextLine();
+					System.out.println("from server: " + moveStr);
+					var moveStrArr = moveStr.split(",");
+					var fromCol = Integer.parseInt(moveStrArr[0]);
+					var fromRow = Integer.parseInt(moveStrArr[1]);
+					var toCol = Integer.parseInt(moveStrArr[2]);
+					var toRow = Integer.parseInt(moveStrArr[3]);
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							chessModel.movePiece(fromCol, fromRow, toCol, toRow);
+							chessBoardPanel.repaint();
+						}
+					});
 				}
+				printWriter.println("0,1,0,3");
+				System.out.println("server: sending a move to client");
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
