@@ -80,7 +80,7 @@ public class ChessView extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	private void drawPieces(Graphics2D g2) {
-		for (int row = 7; row >= 0; row--) {
+		for (int row = 0; row < 8; row++) {
 			for (int col = 0; col < 8; col++) {
 				ChessPiece p = chessDelegate.pieceAt(col, row);
 				if (p != null && p != movingPiece) {
@@ -97,7 +97,7 @@ public class ChessView extends JPanel implements MouseListener, MouseMotionListe
 	
 	private void drawImage(Graphics2D g2, int col, int row, String imgName) {
 		Image img = keyNameValueImage.get(imgName);
-		g2.drawImage(img, originX + col * cellSide, originY + row * cellSide, cellSide, cellSide, null);
+		g2.drawImage(img, originX + col * cellSide, originY + (7 - row) * cellSide, cellSide, cellSide, null);
 	}
 	
 	private Image loadImage(String imgFileName) throws Exception  {
