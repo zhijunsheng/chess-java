@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -64,12 +67,21 @@ public class ChessController implements ChessDelegate, ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println(e.getSource());
 		if (e.getSource() == resetBtn) {
 			chessModel.reset();
 			chessBoardPanel.repaint();
 		} else if (e.getSource() == serverBtn) {
-			System.out.println("Listen (for socket server) clicked");
+			try (var listener = new ServerSocket(50000)) {
+				System.out.println("server is listening to port 50000");
+				while (true) {
+					try (var socket = listener.accept()) {
+						var out = new PrintWriter(socket.getOutputStream(), true);
+						out.println("from (0, 1) to (0, 2)");
+					}
+				}
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		} else if (e.getSource() == clientBtn) {
 			System.out.println("Connect (for socket client) clicked");
 		}
