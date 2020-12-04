@@ -7,6 +7,9 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 
 import javax.swing.JButton;
@@ -23,7 +26,7 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 	ChessController() {
 		chessModel.reset();
 		
-		JFrame frame = new JFrame("Chess");
+		var frame = new JFrame("Chess");
 		frame.setSize(600, 600);
 		frame.setLocation(0, 1300);
 		frame.setLayout(new BorderLayout());
@@ -32,7 +35,7 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 		
 		frame.add(chessBoardPanel, BorderLayout.CENTER);
 		
-		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		var buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		resetBtn = new JButton("Reset");
 		resetBtn.addActionListener(this);
 		buttonsPanel.add(resetBtn);
@@ -76,8 +79,14 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			pool.execute(this);
 		} else if (e.getSource() == clientBtn) {
 			System.out.println("Connect (for socket client) clicked");
+			try {
+				var socket = new Socket("localhost", 50000);
+				var in = new Scanner(socket.getInputStream());
+				System.out.println("from server: " + in.nextLine());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
-		
 	}
 
 	@Override
@@ -87,8 +96,8 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			while (true) {
 				try (var socket = listener.accept()) {
 					var out = new PrintWriter(socket.getOutputStream(), true);
-					out.println("from (0, 1) to (0, 2)");
-					System.out.println("sending a move to client");
+					out.println("server: from (0, 1) to (0, 2)");
+					System.out.println("server: sending a move to client");
 				}
 			}
 		} catch (IOException e1) {
