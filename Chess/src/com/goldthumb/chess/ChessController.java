@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public class ChessController implements ChessDelegate, ActionListener, Runnable {
 	private ChessModel chessModel = new ChessModel();
@@ -79,10 +80,23 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			pool.execute(this);
 		} else if (e.getSource() == clientBtn) {
 			System.out.println("Connect (for socket client) clicked");
-			try {
-				var socket = new Socket("localhost", 50000);
+			try (var socket = new Socket("localhost", 50000)) {
 				var in = new Scanner(socket.getInputStream());
-				System.out.println("from server: " + in.nextLine());
+				var moveStr = in.nextLine(); // "0,1,0,2"
+				System.out.println("from server: " + moveStr);
+				var moveStrArr = moveStr.split(","); // ["0", "1", "0", "2"]
+				var fromCol = Integer.parseInt(moveStrArr[0]);
+				var fromRow = Integer.parseInt(moveStrArr[1]);
+				var toCol = Integer.parseInt(moveStrArr[2]);
+				var toRow = Integer.parseInt(moveStrArr[3]);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						chessModel.movePiece(fromCol, fromRow, toCol, toRow);
+						chessBoardPanel.repaint();
+					}
+				});
+				
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -96,7 +110,7 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			while (true) {
 				try (var socket = listener.accept()) {
 					var out = new PrintWriter(socket.getOutputStream(), true);
-					out.println("server: from (0, 1) to (0, 2)");
+					out.println("0,1,0,3");
 					System.out.println("server: sending a move to client");
 				}
 			}
