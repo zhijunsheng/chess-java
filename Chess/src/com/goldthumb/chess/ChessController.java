@@ -20,6 +20,8 @@ import javax.swing.SwingUtilities;
 
 public class ChessController implements ChessDelegate, ActionListener, Runnable {
 	private ChessModel chessModel = new ChessModel();
+	
+	private JFrame frame;
 	private ChessView chessBoardPanel;
 	private JButton resetBtn;
 	private JButton serverBtn;
@@ -30,9 +32,9 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 	ChessController() {
 		chessModel.reset();
 		
-		var frame = new JFrame("Chess");
-		frame.setSize(600, 600);
-		frame.setLocation(0, 1300);
+		frame = new JFrame("Chess");
+		frame.setSize(500, 550);
+		frame.setLocation(200, 1300);
 		frame.setLayout(new BorderLayout());
 		
 		chessBoardPanel = new ChessView(this);
@@ -109,10 +111,11 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			chessModel.reset();
 			chessBoardPanel.repaint();
 		} else if (e.getSource() == serverBtn) {
+			frame.setTitle("Chess Server");
 			var pool = Executors.newFixedThreadPool(1);
 			pool.execute(this);
 		} else if (e.getSource() == clientBtn) {
-			System.out.println("Connect (for socket client) clicked");
+			frame.setTitle("Chess Client");
 			try {
 				if (scanner == null || printWriter == null) {
 					var socket = new Socket("localhost", 50000);
