@@ -18,7 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-public class ChessController implements ChessDelegate, ActionListener, Runnable {
+public class ChessController implements ChessDelegate, ActionListener {
 	private int PORT = 50000;
 	
 	private ChessModel chessModel = new ChessModel();
@@ -31,7 +31,6 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 	
 	private Socket socket;
 	private PrintWriter printWriter;
-	private Scanner scanner;
 	
 	ChessController() {
 		chessModel.reset();
@@ -67,7 +66,6 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			public void windowClosing(WindowEvent e) {
 				super.windowClosing(e);
 				printWriter.close();
-				scanner.close();
 				try {
 					socket.close();
 				} catch (IOException e1) {
@@ -95,7 +93,7 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 		}
 	}
 	
-	private void receiveMove() {
+	private void receiveMove(Scanner scanner) {
 		while (scanner.hasNextLine()) {
 			var moveStr = scanner.nextLine();
 			System.out.println("chess move received: " + moveStr);
@@ -113,6 +111,41 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			});
 		}
 	}
+	
+	private void runSocketServer() {
+		Executors.newFixedThreadPool(1).execute(new Runnable() {
+			@Override
+			public void run() {
+				try (var listener = new ServerSocket(PORT)) {
+					System.out.println("server is listening on port " + PORT);
+					socket = listener.accept();
+					printWriter = new PrintWriter(socket.getOutputStream(), true);
+					var scanner = new Scanner(socket.getInputStream());
+					receiveMove(scanner);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+	}
+	
+	private void runSocketClient() {
+		try {
+			socket = new Socket("localhost", PORT);
+			System.out.println("client connected to port " + PORT);
+			var scanner = new Scanner(socket.getInputStream());
+			printWriter = new PrintWriter(socket.getOutputStream(), true);
+			
+			Executors.newFixedThreadPool(1).execute(new Runnable() {
+				@Override
+				public void run() {
+					receiveMove(scanner);
+				}
+			});
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -121,41 +154,14 @@ public class ChessController implements ChessDelegate, ActionListener, Runnable 
 			chessBoardPanel.repaint();
 		} else if (e.getSource() == serverBtn) {
 			serverBtn.setEnabled(false);
+			clientBtn.setEnabled(false);
 			frame.setTitle("Chess Server");
-			var pool = Executors.newFixedThreadPool(1);
-			pool.execute(this);
+			runSocketServer();
 		} else if (e.getSource() == clientBtn) {
+			serverBtn.setEnabled(false);
 			clientBtn.setEnabled(false);
 			frame.setTitle("Chess Client");
-			try {
-				socket = new Socket("localhost", PORT);
-				System.out.println("client connected to port " + PORT);
-				scanner = new Scanner(socket.getInputStream());
-				printWriter = new PrintWriter(socket.getOutputStream(), true);
-				
-				Executors.newFixedThreadPool(1).execute(new Runnable() {
-					@Override
-					public void run() {
-						receiveMove();
-					}
-				});
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+			runSocketClient();
 		}
 	}
-
-	@Override
-	public void run() {
-		try (var listener = new ServerSocket(PORT)) {
-			System.out.println("server is listening on port " + PORT);
-			socket = listener.accept();
-			printWriter = new PrintWriter(socket.getOutputStream(), true);
-			scanner = new Scanner(socket.getInputStream());
-			receiveMove();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-	}
-
 }
