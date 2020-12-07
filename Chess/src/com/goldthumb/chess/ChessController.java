@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -171,11 +172,13 @@ public class ChessController implements ChessDelegate, ActionListener {
 			clientBtn.setEnabled(false);
 			frame.setTitle("Chess Server");
 			runSocketServer();
+			JOptionPane.showMessageDialog(frame, "listening on port " + PORT);
 		} else if (e.getSource() == clientBtn) {
 			serverBtn.setEnabled(false);
 			clientBtn.setEnabled(false);
 			frame.setTitle("Chess Client");
 			runSocketClient();
+			JOptionPane.showMessageDialog(frame, "connected to port " + PORT);
 		}
 	}
 }
