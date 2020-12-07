@@ -29,6 +29,7 @@ public class ChessController implements ChessDelegate, ActionListener {
 	private JButton serverBtn;
 	private JButton clientBtn;
 	
+	private ServerSocket listener;
 	private Socket socket;
 	private PrintWriter printWriter;
 	
@@ -116,7 +117,8 @@ public class ChessController implements ChessDelegate, ActionListener {
 		Executors.newFixedThreadPool(1).execute(new Runnable() {
 			@Override
 			public void run() {
-				try (var listener = new ServerSocket(PORT)) {
+				try {
+					listener = new ServerSocket(PORT);
 					System.out.println("server is listening on port " + PORT);
 					socket = listener.accept();
 					printWriter = new PrintWriter(socket.getOutputStream(), true);
@@ -152,6 +154,18 @@ public class ChessController implements ChessDelegate, ActionListener {
 		if (e.getSource() == resetBtn) {
 			chessModel.reset();
 			chessBoardPanel.repaint();
+			try {
+				if (listener != null) {
+					listener.close();
+				}
+				if (socket != null) {
+					socket.close();
+				}
+				serverBtn.setEnabled(true);
+				clientBtn.setEnabled(true);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		} else if (e.getSource() == serverBtn) {
 			serverBtn.setEnabled(false);
 			clientBtn.setEnabled(false);
