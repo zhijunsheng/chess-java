@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 public class ChessController implements ChessDelegate, ActionListener {
+	private String SOCKET_SERVER_ADDR = "localhost";
 	private int PORT = 50000;
 	
 	private ChessModel chessModel = new ChessModel();
@@ -67,9 +68,10 @@ public class ChessController implements ChessDelegate, ActionListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				super.windowClosing(e);
-				printWriter.close();
+				if (printWriter != null) printWriter.close();
 				try {
-					socket.close();
+					if (listener != null) listener.close();
+					if (socket != null) socket.close();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -134,7 +136,7 @@ public class ChessController implements ChessDelegate, ActionListener {
 	
 	private void runSocketClient() {
 		try {
-			socket = new Socket("localhost", PORT);
+			socket = new Socket(SOCKET_SERVER_ADDR, PORT);
 			System.out.println("client connected to port " + PORT);
 			var scanner = new Scanner(socket.getInputStream());
 			printWriter = new PrintWriter(socket.getOutputStream(), true);
