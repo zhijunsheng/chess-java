@@ -124,6 +124,7 @@ public class ChessController implements ChessDelegate, ActionListener {
 					listener = new ServerSocket(PORT);
 					System.out.println("server is listening on port " + PORT);
 					socket = listener.accept();
+					System.out.println("connected from " + socket.getInetAddress());
 					printWriter = new PrintWriter(socket.getOutputStream(), true);
 					var scanner = new Scanner(socket.getInputStream());
 					receiveMove(scanner);
