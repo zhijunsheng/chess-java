@@ -35,28 +35,28 @@ public class ChessModel {
 	}
 	
 	void movePiece(int fromCol, int fromRow, int toCol, int toRow) {
-		ChessPiece candidate = pieceAt(fromCol, fromRow);
-		if (candidate == null || candidate.player != playerInTurn || fromCol == toCol && fromRow == toRow) {
+		ChessPiece movingPiece = pieceAt(fromCol, fromRow);
+		if (movingPiece == null || fromCol == toCol && fromRow == toRow) {
 			return;
 		}
 		
 		ChessPiece target = pieceAt(toCol, toRow);
 		if (target != null) {
-			if (target.player == candidate.player) {
+			if (target.getPlayer() == movingPiece.getPlayer()) {
 				return;
 			} else {
 				piecesBox.remove(target);
 			}
 		}
 		
-		candidate.col = toCol;
-		candidate.row = toRow;
+		piecesBox.remove(movingPiece);
+		piecesBox.add(new ChessPiece(toCol, toRow, movingPiece.getPlayer(), movingPiece.getRank(), movingPiece.getImgName()));
 		playerInTurn = playerInTurn == Player.WHITE ? Player.BLACK : Player.WHITE;
 	}
 	
 	ChessPiece pieceAt(int col, int row) {
 		for (ChessPiece chessPiece : piecesBox) {
-			if (chessPiece.col == col && chessPiece.row == row) {
+			if (chessPiece.getCol() == col && chessPiece.getRow() == row) {
 				return chessPiece;
 			}
 		}
@@ -75,24 +75,24 @@ public class ChessModel {
 					desc += " .";
 				} else {
 					desc += " ";
-					switch (p.rank) {
+					switch (p.getRank()) {
 					case KING: 
-						desc += p.player == Player.WHITE ? "k" : "K";
+						desc += p.getPlayer() == Player.WHITE ? "k" : "K";
 						break;
 					case QUEEN: 
-						desc += p.player == Player.WHITE ? "q" : "Q";
+						desc += p.getPlayer() == Player.WHITE ? "q" : "Q";
 						break;
 					case BISHOP: 
-						desc += p.player == Player.WHITE ? "b" : "B";
+						desc += p.getPlayer() == Player.WHITE ? "b" : "B";
 						break;
 					case ROOK: 
-						desc += p.player == Player.WHITE ? "r" : "R";
+						desc += p.getPlayer() == Player.WHITE ? "r" : "R";
 						break;
 					case KNIGHT: 
-						desc += p.player == Player.WHITE ? "n" : "N";
+						desc += p.getPlayer() == Player.WHITE ? "n" : "N";
 						break;
 					case PAWN: 
-						desc += p.player == Player.WHITE ? "p" : "P";
+						desc += p.getPlayer() == Player.WHITE ? "p" : "P";
 						break;
 					}
 				}

@@ -33,8 +33,8 @@ class ChessModelTest {
 		assertNull(chessModel.pieceAt(0, 0));
 		chessModel.reset();
 		assertNotNull(chessModel.pieceAt(0, 0));
-		assertEquals(Player.WHITE, chessModel.pieceAt(0, 0).player);
-		assertEquals(Rank.ROOK, chessModel.pieceAt(0, 0).rank);
+		assertEquals(Player.WHITE, chessModel.pieceAt(0, 0).getPlayer());
+		assertEquals(Rank.ROOK, chessModel.pieceAt(0, 0).getRank());
 	}
 
 	@Test
